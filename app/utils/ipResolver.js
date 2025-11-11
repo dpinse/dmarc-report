@@ -1,61 +1,33 @@
-// Cache for DNS lookups to avoid redundant requests
-const dnsCache = new Map()
-
-// Resolve IP address to hostname using DNS-over-HTTPS
-export async function resolveIP(ipAddress) {
-  // Check cache first
-  if (dnsCache.has(ipAddress)) {
-    return dnsCache.get(ipAddress)
-  }
-
+// Batch resolve multiple IPs using API route with Redis caching
+export async function resolveIPs(ipAddresses) {
   try {
-    // Use Google's DNS-over-HTTPS service for reverse DNS lookup
-    const response = await fetch(
-      `https://dns.google/resolve?name=${reverseIP(ipAddress)}.in-addr.arpa&type=PTR`,
-      {
-        signal: AbortSignal.timeout(5000) // 5 second timeout
-      }
-    )
+    const response = await fetch('/api/resolve-ips', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ips: ipAddresses }),
+    })
 
     if (!response.ok) {
-      throw new Error('DNS lookup failed')
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
     const data = await response.json()
-
-    if (data.Answer && data.Answer.length > 0) {
-      // Get the PTR record (hostname)
-      const hostname = data.Answer[0].data.replace(/\.$/, '') // Remove trailing dot
-      dnsCache.set(ipAddress, hostname)
-      return hostname
-    }
+    return data.results || {}
   } catch (error) {
-    console.log(`Could not resolve ${ipAddress}:`, error.message)
+    console.error('Failed to resolve IPs:', error)
+    // Return empty results on error
+    const results = {}
+    ipAddresses.forEach(ip => {
+      results[ip] = null
+    })
+    return results
   }
-
-  // If resolution fails, cache and return null
-  dnsCache.set(ipAddress, null)
-  return null
 }
 
-// Reverse IP address for PTR lookup (e.g., 1.2.3.4 -> 4.3.2.1)
-function reverseIP(ip) {
-  return ip.split('.').reverse().join('.')
-}
-
-// Batch resolve multiple IPs
-export async function resolveIPs(ipAddresses) {
-  const results = {}
-  const promises = ipAddresses.map(async (ip) => {
-    const hostname = await resolveIP(ip)
-    results[ip] = hostname
-  })
-
-  await Promise.all(promises)
-  return results
-}
-
-// Clear the DNS cache
+// Clear the DNS cache (now handled server-side)
 export function clearDNSCache() {
-  dnsCache.clear()
+  // No-op for client-side, caching is handled by Redis on server
+  console.log('DNS cache is managed server-side')
 }

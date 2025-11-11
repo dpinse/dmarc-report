@@ -112,16 +112,55 @@ export function calculateStatistics(report) {
   let dkimFail = 0
   let spfPass = 0
   let spfFail = 0
+  let forwardedCount = 0
 
   const ipSources = {}
   const dispositions = {}
 
   records.forEach(record => {
-    const { count, policyEvaluated, sourceIp } = record
+    const { count, policyEvaluated, sourceIp, identifiers, authResults } = record
 
     // Count by disposition
     const disp = policyEvaluated.disposition || 'none'
     dispositions[disp] = (dispositions[disp] || 0) + count
+
+    // Check if forwarded (SPF domain differs from header_from domain)
+    // Use SPF domain (MAIL FROM) as it's more reliable than envelope_from
+    const headerFrom = identifiers.headerFrom || ''
+    const headerDomain = headerFrom.includes('@')
+      ? headerFrom.split('@')[1]?.toLowerCase()?.trim()
+      : headerFrom.toLowerCase()?.trim()
+
+    // Get SPF domain from auth results - check all SPF records
+    let spfDomain = null
+    if (authResults.spf && authResults.spf.length > 0) {
+      // Look for mfrom scope (MAIL FROM) first, otherwise take first SPF record
+      const mfromSpf = authResults.spf.find(s => s.scope === 'mfrom')
+      spfDomain = (mfromSpf?.domain || authResults.spf[0]?.domain)?.toLowerCase()?.trim()
+    }
+
+    // Check if forwarded - but exclude subdomains (e.g., ses.example.com is not forwarded from example.com)
+    let isForwarded = false
+    if (spfDomain && headerDomain && spfDomain !== headerDomain) {
+      // Get base domains (last two parts)
+      const getBaseDomain = (domain) => {
+        const parts = domain.split('.')
+        if (parts.length >= 2) {
+          return parts.slice(-2).join('.')
+        }
+        return domain
+      }
+
+      const spfBase = getBaseDomain(spfDomain)
+      const headerBase = getBaseDomain(headerDomain)
+
+      // Only count as forwarded if base domains differ
+      isForwarded = spfBase !== headerBase
+    }
+
+    if (isForwarded) {
+      forwardedCount += count
+    }
 
     // Count pass/fail/partial
     const dkimResult = policyEvaluated.dkim
@@ -168,6 +207,7 @@ export function calculateStatistics(report) {
     dkimFail,
     spfPass,
     spfFail,
+    forwardedCount,
     dispositions,
     topIPs,
   }

@@ -415,6 +415,8 @@ body {
   font-size: 1rem;
   color: var(--text-primary);
   font-weight: 500;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .policy-badge {
@@ -478,6 +480,12 @@ body {
 
 .stat-card.stat-fail {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+}
+
+.stat-card.stat-forward {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
   border: none;
 }
@@ -587,6 +595,7 @@ body {
 /* Records Table */
 .records-table-container {
   overflow-x: auto;
+  overflow-y: visible;
   border-radius: 0.75rem;
   border: 2px solid var(--border-primary);
 }
@@ -602,21 +611,25 @@ body {
 }
 
 .records-table th {
-  padding: 1rem;
-  text-align: left;
+  padding: 1rem 1.5rem;
+  text-align: center;
   font-weight: 700;
   color: var(--text-secondary);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 2px solid var(--border-primary);
+  white-space: nowrap;
 }
 
 .records-table td {
-  padding: 1rem;
+  padding: 1rem 1.5rem;
+  text-align: center;
   border-bottom: 1px solid var(--border-primary);
   color: var(--text-primary);
   font-size: 0.875rem;
+  position: relative;
+  overflow: visible;
 }
 
 .records-table tbody tr:hover {
@@ -639,8 +652,9 @@ body {
 }
 
 .badge-pass {
-  background: #d1fae5;
-  color: #065f46;
+  background: #10b981;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .badge-fail {
@@ -651,6 +665,12 @@ body {
 .badge-partial {
   background: #fef3c7;
   color: #92400e;
+}
+
+.badge-warning {
+  background: #f59e0b;
+  color: white;
+  font-weight: 600;
 }
 
 .badge-none,
@@ -720,6 +740,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.service-with-hostname {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.service-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.875rem;
 }
 
 .hostname-primary {
@@ -838,6 +870,17 @@ body {
   font-size: 0.75rem;
   color: var(--text-primary);
   font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.dkim-at {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin: 0 0.15rem;
+  flex-shrink: 0;
 }
 
 /* DKIM Selectors in table */
@@ -845,25 +888,115 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 100%;
 }
 
 .dkim-selector-item {
+  display: inline-block;
+  padding: 0.25rem 0;
+  max-width: 100%;
+}
+
+.dkim-selector-display {
   display: flex;
   align-items: center;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+  cursor: help;
+  transition: opacity 0.2s ease;
+}
+
+.dkim-selector-item:hover .dkim-selector-display {
+  opacity: 0.8;
+}
+
+/* Fixed position tooltip for DKIM selectors */
+.dkim-tooltip-fixed {
+  background: var(--bg-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 99999;
+  width: 320px;
+  pointer-events: none;
+}
+
+.dkim-tooltip-fixed .detail-row {
+  display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.dkim-tooltip-fixed .detail-row:last-child {
+  border-bottom: none;
+}
+
+.dkim-tooltip-fixed .detail-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 100px;
+  font-size: 0.75rem;
+}
+
+.dkim-tooltip-fixed .detail-value {
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  word-break: break-all;
+  flex: 1;
 }
 
 .dkim-domain {
   font-size: 0.75rem;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .no-data {
   color: var(--text-muted);
   font-style: italic;
   font-size: 0.875rem;
+}
+
+/* Country Badge */
+.country-badge {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+  font-family: monospace;
+}
+
+/* Country Flag */
+.country-flag {
+  font-size: 1.5rem;
+  display: inline-block;
+  line-height: 1;
+  cursor: help;
+}
+
+/* Compliance Cell */
+.compliance-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.compliance-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Filter UI */
@@ -995,4 +1128,192 @@ body {
   .records-table td {
     padding: 0.5rem;
   }
+}
+
+/* Expandable Row Styles */
+.expand-col {
+  width: 40px;
+  padding: 0.5rem !important;
+  text-align: center;
+}
+
+.expand-icon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.expandable-row {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.expandable-row:hover {
+  background: var(--bg-tertiary) !important;
+}
+
+.source-cell {
+  min-width: 200px;
+}
+
+.service-display, .hostname-display, .ip-display {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.service-display .service-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.hostname-display .hostname-primary {
+  font-size: 0.875rem;
+}
+
+.ip-display {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+/* Detail Row */
+.detail-row {
+  background: var(--bg-secondary) !important;
+  border-top: 2px solid var(--accent-primary);
+}
+
+.detail-row td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.detail-container {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.detail-table thead {
+  background: var(--bg-tertiary);
+}
+
+.detail-table th {
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap;
+}
+
+.detail-table td {
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.detail-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.hostname-detail {
+  min-width: 180px;
+  max-width: 400px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.hostname-detail .hostname-with-ip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hostname-detail .hostname-primary {
+  font-weight: 600;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.hostname-detail .hostname-secondary {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-family: 'Courier New', monospace;
+}
+
+/* Ensure adequate spacing for all columns */
+.detail-table th:nth-child(1),
+.detail-table td:nth-child(1) {
+  min-width: 180px; /* Hostname / IP */
+}
+
+.detail-table th:nth-child(2),
+.detail-table td:nth-child(2) {
+  min-width: 100px; /* Country */
+}
+
+.detail-table th:nth-child(3),
+.detail-table td:nth-child(3) {
+  min-width: 100px; /* Volume */
+}
+
+.detail-table th:nth-child(4),
+.detail-table td:nth-child(4) {
+  min-width: 150px; /* Reporter */
+}
+
+.detail-table th:nth-child(5),
+.detail-table td:nth-child(5) {
+  min-width: 120px; /* DKIM Result */
+}
+
+.detail-table th:nth-child(6),
+.detail-table td:nth-child(6) {
+  min-width: 150px; /* DKIM Selector */
+}
+
+.detail-table th:nth-child(7),
+.detail-table td:nth-child(7) {
+  min-width: 120px; /* SPF Result */
+}
+
+.detail-table th:nth-child(8),
+.detail-table td:nth-child(8) {
+  min-width: 160px; /* SPF Domain */
+}
+
+.detail-table th:nth-child(9),
+.detail-table td:nth-child(9) {
+  min-width: 160px; /* Envelope To */
+}
+
+.detail-table th:nth-child(10),
+.detail-table td:nth-child(10) {
+  min-width: 160px; /* Header From */
+}
+
+.detail-table th:nth-child(11),
+.detail-table td:nth-child(11) {
+  min-width: 100px; /* Forwarded */
 }
